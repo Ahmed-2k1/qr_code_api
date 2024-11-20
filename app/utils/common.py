@@ -6,107 +6,84 @@ from dotenv import load_dotenv
 from jose import jwt
 from datetime import datetime, timedelta
 from app.config import ADMIN_PASSWORD, ADMIN_USER, ALGORITHM, SECRET_KEY
-import validators  # Ensure this package is installed
+import validators  # Make sure to install this package
 from urllib.parse import urlparse, urlunparse
 
-# Load environment variables from .env file for security and configuration
+# Load environment variables from .env file for security and configuration.
 load_dotenv()
 
 
 def setup_logging():
     """
     Sets up logging for the application using a configuration file.
-    Ensures standardized logging across the application.
+    This ensures standardized logging across the entire application.
     """
-    # Construct the path to 'logging.conf'
+    # Construct the path to 'logging.conf', assuming it's in the project's root.
     logging_config_path = os.path.join(
         os.path.dirname(__file__), '..', '..', 'logging.conf')
-    # Normalize the path for cross-platform compatibility
+    # Normalize the path to handle any '..' correctly.
     normalized_path = os.path.normpath(logging_config_path)
-    # Apply the logging configuration
+    # Apply the logging configuration.
     logging.config.fileConfig(normalized_path, disable_existing_loggers=False)
 
 
 def authenticate_user(username: str, password: str):
     """
-    Authenticates a user based on provided credentials.
-    Replace with actual authentication logic in a real application.
-
-    Parameters:
-    - username (str): The username of the user.
-    - password (str): The password of the user.
-
-    Returns:
-    - dict: A dictionary containing the username if authentication is successful.
-    - None: If authentication fails.
+    Placeholder for user authentication logic.
+    In a real application, replace this with actual authentication against a user database.
     """
+    # Simple check against constants for demonstration.
     if username == ADMIN_USER and password == ADMIN_PASSWORD:
         return {"username": username}
+    # Log a warning if authentication fails.
     logging.warning(f"Authentication failed for user: {username}")
     return None
 
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
     """
-    Generates a JWT access token with optional expiration.
-
-    Parameters:
-    - data (dict): The payload to encode in the token.
-    - expires_delta (timedelta): Optional duration for token validity.
-
-    Returns:
-    - str: The encoded JWT access token.
+    Generates a JWT access token. Optionally, an expiration time can be specified.
     """
+    # Copy user data and set expiration time for the token.
     to_encode = data.copy()
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    # Encode the data to create the JWT.
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
 
 
-def validate_and_sanitize_url(url_str: str):
+def validate_and_sanitize_url(url_str):
     """
-    Validates and sanitizes a URL.
-
-    Parameters:
-    - url_str (str): The URL string to validate.
-
-    Returns:
-    - str: Sanitized URL if valid.
-    - None: If the URL is invalid.
+    Validates a given URL string and returns a sanitized version if valid.
+    Returns None if the URL is invalid, ensuring only safe URLs are processed.
     """
     if validators.url(url_str):
         parsed_url = urlparse(url_str)
-        return urlunparse(parsed_url)
-    logging.error(f"Invalid URL provided: {url_str}")
-    return None
+        sanitized_url = urlunparse(parsed_url)
+        return sanitized_url
+    else:
+        logging.error(f"Invalid URL provided: {url_str}")
+        return None
 
 
-def encode_url_to_filename(url: str):
+def encode_url_to_filename(url):
     """
-    Encodes a URL into a base64-encoded filename-safe string.
-
-    Parameters:
-    - url (str): The URL to encode.
-
-    Returns:
-    - str: Base64-encoded string safe for filenames.
+    Encodes a URL into a base64 string safe for filenames, after validating and sanitizing.
+    Removes padding to ensure filename compatibility.
     """
-    sanitized_url = validate_and_sanitize_url(url)
+    sanitized_url = validate_and_sanitize_url(str(url))
     if sanitized_url is None:
         raise ValueError("Provided URL is invalid and cannot be encoded.")
     encoded_bytes = base64.urlsafe_b64encode(sanitized_url.encode('utf-8'))
-    return encoded_bytes.decode('utf-8').rstrip('=')
+    encoded_str = encoded_bytes.decode('utf-8').rstrip('=')
+    return encoded_str
 
 
 def decode_filename_to_url(encoded_str: str) -> str:
     """
-    Decodes a base64-encoded filename-safe string back into a URL.
-
-    Parameters:
-    - encoded_str (str): The base64-encoded string to decode.
-
-    Returns:
-    - str: Decoded URL.
+    Decodes a base64 encoded string back into a URL, adding padding if necessary.
+    This reverses the process done by `encode_url_to_filename`.
     """
     padding_needed = 4 - (len(encoded_str) % 4)
     if padding_needed:
@@ -117,16 +94,8 @@ def decode_filename_to_url(encoded_str: str) -> str:
 
 def generate_links(action: str, qr_filename: str, base_api_url: str, download_url: str) -> List[dict]:
     """
-    Generates HATEOAS links for QR code resources.
-
-    Parameters:
-    - action (str): The type of action (list, create, delete).
-    - qr_filename (str): The filename of the QR code.
-    - base_api_url (str): The base API URL.
-    - download_url (str): The download URL for the QR code.
-
-    Returns:
-    - List[dict]: A list of HATEOAS links.
+    Generates HATEOAS links for QR code resources, including view and delete actions.
+    This supports the application's RESTful architecture by providing links to possible actions.
     """
     links = []
     if action in ["list", "create"]:

@@ -1,9 +1,17 @@
+"""
+This module contains tests for API endpoints, including login and QR code operations.
+"""
+
 import pytest
 from httpx import AsyncClient
 from app.main import app  # Import your FastAPI app
 
+
 @pytest.mark.asyncio
 async def test_login_for_access_token():
+    """
+    Tests the /token endpoint to verify that an access token is returned.
+    """
     form_data = {
         "username": "admin",
         "password": "secret",
@@ -14,9 +22,12 @@ async def test_login_for_access_token():
     assert "access_token" in response.json()
     assert response.json()["token_type"] == "bearer"
 
+
 @pytest.mark.asyncio
 async def test_create_qr_code_unauthorized():
-    # Attempt to create a QR code without authentication
+    """
+    Verifies that creating a QR code without authentication returns a 401 status code.
+    """
     qr_request = {
         "url": "https://example.com",
         "fill_color": "red",
@@ -27,8 +38,12 @@ async def test_create_qr_code_unauthorized():
         response = await ac.post("/qr-codes/", json=qr_request)
     assert response.status_code == 401  # Unauthorized
 
+
 @pytest.mark.asyncio
 async def test_create_and_delete_qr_code():
+    """
+    Tests authenticated QR code creation and deletion.
+    """
     form_data = {
         "username": "admin",
         "password": "secret",
@@ -47,7 +62,8 @@ async def test_create_and_delete_qr_code():
             "size": 10,
         }
         create_response = await ac.post("/qr-codes/", json=qr_request, headers=headers)
-        assert create_response.status_code in [201, 409]  # Created or already exists
+        assert create_response.status_code in [
+            201, 409]  # Created or already exists
 
         # If the QR code was created, attempt to delete it
         if create_response.status_code == 201:
