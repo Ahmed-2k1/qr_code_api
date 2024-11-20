@@ -27,7 +27,7 @@ SERVER_BASE_URL = os.getenv('SERVER_BASE_URL', 'http://localhost:80')
 # such as QR codes. This could be a path routed by your server for static files.
 SERVER_DOWNLOAD_FOLDER = os.getenv('SERVER_DOWNLOAD_FOLDER', 'downloads')
 
-# SECRET_KEY is used in cryptographic operations, such as signing JWT tokens. 
+# SECRET_KEY is used in cryptographic operations, such as signing JWT tokens.
 # It should be a long, random string that is kept secret.
 SECRET_KEY = os.getenv("SECRET_KEY", "secret-getenvkey")
 
