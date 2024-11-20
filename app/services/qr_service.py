@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 from app.config import SERVER_BASE_URL, SERVER_DOWNLOAD_FOLDER
 
+
 def list_qr_codes(directory_path: Path) -> List[str]:
     """
     Lists all QR code images in the specified directory by returning their filenames.
@@ -23,6 +24,7 @@ def list_qr_codes(directory_path: Path) -> List[str]:
     except OSError as e:
         logging.error(f"An OS error occurred while listing QR codes: {e}")
         raise
+
 
 def generate_qr_code(data: str, path: Path, fill_color: str = 'red', back_color: str = 'white', size: int = 10):
     """
@@ -46,7 +48,8 @@ def generate_qr_code(data: str, path: Path, fill_color: str = 'red', back_color:
         logging.error(f"Failed to generate/save QR code: {e}")
         raise
 
-def delete_qr_cde(file_path: Path):
+
+def delete_qr_code(file_path: Path):
     """
     Deletes the specified QR code image file.
     Parameters:
@@ -59,6 +62,7 @@ def delete_qr_cde(file_path: Path):
         logging.error(f"QR code {file_path.name} not found for deletion")
         raise FileNotFoundError(f"QR code {file_path.name} not found")
 
+
 def create_directory(directory_path: Path):
     """
     Creates a directory at the specified path if it doesn't already exist.
@@ -67,12 +71,15 @@ def create_directory(directory_path: Path):
     """
     logging.debug('Attempting to create directory')
     try:
-        directory_path.mkdir(parents=True, exist_ok=True)  # Create the directory and any parent directories
+        # Create the directory and any parent directories
+        directory_path.mkdir(parents=True, exist_ok=True)
     except FileExistsError:
         logging.info(f"Directory already exists: {directory_path}")
     except PermissionError as e:
-        logging.error(f"Permission denied when trying to create directory {directory_path}: {e}")
+        logging.error(
+            f"Permission denied when trying to create directory {directory_path}: {e}")
         raise
     except Exception as e:
-        logging.error(f"Unexpected error creating directory {directory_path}: {e}")
+        logging.error(
+            f"Unexpected error creating directory {directory_path}: {e}")
         raise
